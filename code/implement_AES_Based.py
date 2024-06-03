@@ -1,5 +1,6 @@
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
+import time
 
 class AESRollingCode:
     def __init__(self, key, iterations=5):
