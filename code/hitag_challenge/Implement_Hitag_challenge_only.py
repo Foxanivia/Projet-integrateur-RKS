@@ -1,53 +1,54 @@
 # Bibliothèques
-from Crypto.Cipher import AES
+from Crypto.Cipher import ARC4
 from Crypto.Random import get_random_bytes
 import hashlib
 
 
-class HitagTransponder:
+class Hitag3Transponder:
     def __init__(self, key):
         """
-        Initialise le transpondeur Hitag avec une clé spécifiée.
-        :param key: Clé utilisée pour le chiffrement (doit être de longueur arbitraire, mais sera condensée en 128 bits)
+        Initialise le transpondeur Hitag3 avec une clé spécifiée.
+        :param key: Clé utilisée pour le chiffrement (doit être de longueur arbitraire, mais sera condensée)
         """
         self.key = hashlib.sha256(key).digest()[:16]  # Utiliser une clé de 128 bits
 
     def chiffre_challenge(self, challenge):
         """
         Chiffre un challenge en utilisant la clé du transpondeur.
-        :param challenge: Challenge à chiffrer (doit être de 16 octets)
+        :param challenge: Challenge à chiffrer
         :return: Challenge chiffré
         """
-        cipher = AES.new(self.key, AES.MODE_ECB)
+        # Chiffrement par Flux
+        cipher = ARC4.new(self.key)
         encrypted_challenge = cipher.encrypt(challenge)
         return encrypted_challenge
 
 
-class HitagReceiver:
+class Hitag3Receiver:
     def __init__(self, key):
         """
-        Initialise le récepteur Hitag avec une clé spécifiée.
-        :param key: Clé utilisée pour le chiffrement (doit être de longueur arbitraire, mais sera condensée en 128 bits)
+        Initialise le récepteur Hitag3 avec une clé spécifiée.
+        :param key: Clé utilisée pour le chiffrement (doit être de longueur arbitraire, mais sera condensée)
         """
         self.key = hashlib.sha256(key).digest()[:16]  # Utiliser une clé de 128 bits
 
     def generate_challenge(self):
         """
-        Génère un challenge aléatoire de 16 octets.
+        Génère un challenge aléatoire.
         :return: Challenge aléatoire
         """
-        return get_random_bytes(16)
+        return get_random_bytes(8)  # Utiliser un challenge de 8 octets pour imiter Hitag3
 
-    def check_answer(self, challenge, anwser):
+    def check_answer(self, challenge, answer):
         """
         Vérifie si la réponse chiffrée correspond au challenge initial en utilisant la clé du récepteur.
-        :param challenge: Challenge initial (doit être de 16 octets)
-        :param anwser: Réponse chiffrée à vérifier (doit être de 16 octets)
+        :param challenge: Challenge initial
+        :param answer: Réponse chiffrée à vérifier
         :return: True si la réponse est correcte, False sinon
         """
-        cipher = AES.new(self.key, AES.MODE_ECB)
+        cipher = ARC4.new(self.key)
         expected_response = cipher.encrypt(challenge)
-        return anwser == expected_response
+        return answer == expected_response
 
 
 def main():
@@ -55,8 +56,8 @@ def main():
     key = b'secret_key'
 
     # Création de l'émetteur et du récepteur qui partagent la même clé
-    transponder = HitagTransponder(key)
-    receiver = HitagReceiver(key)
+    transponder = Hitag3Transponder(key)
+    receiver = Hitag3Receiver(key)
 
     #################################
     # Ex1: Echange de Challenge     #
