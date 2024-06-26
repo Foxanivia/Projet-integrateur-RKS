@@ -3,3 +3,4 @@ srp~=1.0.20
 psutil~=5.9.8
 numpy~=1.26.4
 matplotlib~=3.9.0
+ecdsa
